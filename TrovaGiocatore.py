@@ -10,7 +10,6 @@ import os
 import re
 
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
@@ -25,7 +24,7 @@ from pylab import figure, axes, pie, title, show
 
 class calciatore:
     m_name = 0
-    m_cash = 350
+    m_cash = 500
 
     def __init__(self):
       '''
@@ -59,7 +58,7 @@ class calciatore:
       self.m_RatioVp = 0#float(self.m_Mv)/float(self.m_Pg)
       self.m_RatioVG = 0#float(self.m_Mv)/float(self.m_Gf)
       #self.m_RatioGPg = 0#float(self.m_Mv)/float(self.m_Gf)
-
+#
     def SetAll(self,stat_gioc):
 
        self.m_R = stat_gioc[0]
@@ -82,7 +81,7 @@ class calciatore:
        #self.m_RatioGPg = 0#float(self.m_Mv)/float(self.m_Gf)
 
 
-
+# due funzioni che utilizi dopo. con e senza definizione degli oggetti
     def Print(self):
         #print "Nome ",self.m_Nome," R ",self.m_R," RM ",self.m_Rm," Qi ",self.m_Qi," Qa ",self.m_Qa," Squadra ",self.m_Squadra
         #print "Nome ",self.m_Nome," Squadra ",self.m_Squadra," m_Mf ",self.m_Mf," m_Gf ",self.m_Gf," m_Gs ",self.m_Gs," m_Pg ",self.m_Pg," m_Ass ",self.m_Ass," m_RatioVp ",self.m_RatioVp, " m_RatioVG ",self.m_RatioVG
@@ -100,20 +99,20 @@ class calciatore:
 
     def GetName(self):
 
-        return self.m_Id
+        return self.m_name
 
     def GetCash(self):
         return self.m_cash
 
     def SetName(self,name):
-        self.m_Id = name
+        self.m_name = name
 
     def SetCash(self,cash):
         self.m_cash = cash
     def SetRatio(self):
         if(float(self.m_Pg)>0):
-          self.m_RatioVp = float(self.m_Mv)/float(self.m_Pg)
-          self.m_RatioVG = float(self.m_Gf)/float(self.m_Pg)
+          self.m_RatioVp = float(self.m_Mv)/float(self.m_Pg) # fv/partite giocate
+          self.m_RatioVG = float(self.m_Gf)/float(self.m_Pg) # gf/pg
           #self.m_RatioGPg = float(self.m_Gs)/float(self.m_Pg)
 
 
@@ -129,7 +128,7 @@ class Lista_Calciatori:
         self.m_listcalc = []
         self.m_Ruolo = 0
         self.m_Media = 0    
-        self.m_RMS = 0
+        self.m_SD = 0
         #self.m_listcalc.append( calciatore())
     def AddDiff(self, arg):
         self.m_listcalc.append(arg)
@@ -141,14 +140,14 @@ class Lista_Calciatori:
         for x in range(len(self.m_listcalc)):
           #if(float(self.m_listcalc[x].m_Pg)>4):
           dist = float(self.m_listcalc[x].m_Mv) - float(self.m_Media)
-          if(dist/self.m_RMS>0.75 and float(self.m_listcalc[x].m_Pg)>9):
+          if(dist/self.m_SD>0.65 and float(self.m_listcalc[x].m_Pg)>10):
            self.m_listcalc[x].Print()
            #self.m_listcalc[x].PrintEmpyt()
 
            
     def PrintOne(self,arg):
         self.m_listcalc[arg].Print()
-    def CalcMedia(self):
+    def CalcMedia(self): # media delle medie dei calciatori (x) dal primo all'ultimo (solo quelli che non hanno 0)
         voto = 0
         media = 0
         non_zero = 0
@@ -157,19 +156,19 @@ class Lista_Calciatori:
          media = media+voto
          if (voto!=0):
           non_zero = non_zero+1
-        self.m_Media= media / non_zero
-    def CalcRMS(self):
+        self.m_Media= media / non_zero 
+    def CalcSD(self):
         voto = 0
         delta = 0
-        RMS = 0
+        SD = 0
         non_zero = 0
         for x in range(len(self.m_listcalc)):
          voto = float(self.m_listcalc[x].m_Mv)
          delta = voto - self.m_Media
          if (voto!=0):
-          RMS = RMS + delta*delta
+          SD = SD + delta*delta
           non_zero = non_zero+1
-        self.m_RMS = (RMS / non_zero)**(0.5)
+        self.m_SD = (SD / non_zero)**(0.5)
     def FindName(self,arg):
       position = -99999
       for x in range(len(self.m_listcalc)):
@@ -185,7 +184,7 @@ class Lista_Calciatori:
           sigma = float(self.m_listcalc[pos].m_Mv) - self.m_Media
           segno = math.copysign(1,float(self.m_listcalc[pos].m_Mv) - self.m_Media)
           appo = segno*(sigma*sigma)**(0.5)
-          return appo / self.m_RMS
+          return appo / self.m_SD
         else:
           return -99999
     def FindMax_Qa(self):
@@ -259,25 +258,17 @@ class Lista_Calciatori:
 
 
 #########################################################################################
+# messaggio d'errore
 def usage():
      print 'Usage:\n python %s <input txt> <nome calciatore>' % ( sys.argv[0] )
 #########################################################################################  
 if __name__ == "__main__":
  #window = pMainFrame( ROOT.gClient.GetRoot(), 200, 200 )
- if len( sys.argv ) < 2:
+ if len( sys.argv ) < 3:
         usage()
         sys.exit( 1 )    
- 
- file_name = 0
- datrovare = 0
- 
- if len( sys.argv )==3:
-  file_name,datrovare= sys.argv[1],sys.argv[2]    
- if len( sys.argv )==2:
-  file_name= sys.argv[1]
-  datrovare = raw_input("Chi vuoi controllare? ")
-  print("Hai scelto " + file_name + "!")
-
+        
+ file_name,datrovare= sys.argv[1],sys.argv[2]    
   #Id	R	Nome	Squadra	Pg	Mv	Mf	Gf	Gs	Rp	Rc	R+	R-	Ass	Asf	Amm	Esp	Au
  Stagione_17 = []
  acc = 0
@@ -330,10 +321,11 @@ if __name__ == "__main__":
  #indice = WT_17.FindMax_Qa()
  #print indice
  #WT_17.PrintOne(indice)
+ 
  #histo=TH1F("histo","histo",10,0.,10)
  print "------------------------------------------------------------"
  D_17.CalcMedia()
- D_17.CalcRMS()
+ D_17.CalcSD()
  D_17.DoStat()
  D_17.Ordina()
  #C_17.Ordina_RatioVG()
@@ -341,7 +333,7 @@ if __name__ == "__main__":
  print "------------------------------------------------------------"
 
  C_17.CalcMedia()
- C_17.CalcRMS()
+ C_17.CalcSD()
  C_17.DoStat()
  C_17.Ordina()
  #C_17.Ordina_RatioVG()
@@ -349,7 +341,7 @@ if __name__ == "__main__":
  print "------------------------------------------------------------"
 
  A_17.CalcMedia()
- A_17.CalcRMS()
+ A_17.CalcSD()
  A_17.DoStat()
  A_17.Ordina()
  A_17.PrintDiff()
@@ -366,108 +358,117 @@ if __name__ == "__main__":
  # # We can set the number of bins with the `bins` kwarg
  # axs[0].hist(x, bins=n_bins)
  # axs[1].hist(y, bins=n_bins)
+
+
+ n_bins = 15
+ x_D=[]
+ x_C=[]
+ x_A=[]
+ for i in range(len(D_17.m_listcalc)):
+      voto = float(D_17.m_listcalc[i].m_Mv)
+      if(voto>0): 
+       x_D.append(voto)
+ plt.figure(1)
+ plt.hist(x_D, normed=True, bins=n_bins, color='c',label='Difensori')   
+ plt.ylabel('A.U.');
+ plt.xlabel('Media Fanta Voto');
+ x1=D_17.m_Media
+ x2=D_17.m_Media
+ plt.plot([x1, x2], [0, 1], color='r', linestyle='-.', linewidth=4,label='media')
+ plt.legend(loc='upper left')
+
+ 
+ for i in range(len(C_17.m_listcalc)):
+    voto = float(C_17.m_listcalc[i].m_Mv)
+    if(voto>0): 
+      x_C.append(voto)
+ plt.figure(2)
+ plt.hist(x_C, normed=True, bins=n_bins, color='c', label='Centrocampisti')  
+ plt.ylabel('A.U.');
+ plt.xlabel('Media Fanta Voto');
+ x1=C_17.m_Media
+ x2=C_17.m_Media
+ plt.plot([x1, x2], [0, 1], color='r', linestyle='-.', linewidth=4,label='media')
+ plt.legend(loc='upper left') 
+ 
+ for i in range(len(A_17.m_listcalc)):
+      voto = float(A_17.m_listcalc[i].m_Mv)
+      if(voto>0): 
+       x_A.append(voto)
+ plt.figure(3)
+ plt.hist(x_A, normed=True, bins=n_bins, color='c', label='Attaccanti') 
+ plt.ylabel('A.U.');
+ plt.xlabel('Media Fanta Voto');
+ x1=A_17.m_Media
+ x2=A_17.m_Media
+ plt.plot([x1, x2], [0, 1], color='r', linestyle='-.', linewidth=4,label='media')
+
+ plt.legend(loc='upper left')
+
+
+
  continua_ciclo = True
  print "end is near? ",continua_ciclo
  while continua_ciclo:
- 	 print "inside"
-	 pos_tmp_D  = D_17.MeasureDistance(datrovare)
-	 if (pos_tmp_D>-99999):
-	  print "distance: ",datrovare," ",D_17.MeasureDistance(datrovare)
+   print "inside"
+   pos_tmp_D  = D_17.MeasureDistance(datrovare)
+   if (pos_tmp_D>-99999):
+    print "distance: ",datrovare," ",D_17.MeasureDistance(datrovare)
 
 
-	 pos_tmp_C  = C_17.MeasureDistance(datrovare)
-	 if (pos_tmp_C>-99999):
-	 	print "distance: ",datrovare," ",C_17.MeasureDistance(datrovare)
+   pos_tmp_C  = C_17.MeasureDistance(datrovare)
+   if (pos_tmp_C>-99999):
+ 	  print "distance: ",datrovare," ",C_17.MeasureDistance(datrovare)
 
 
-	 pos_tmp_A  = A_17.MeasureDistance(datrovare)
-	 if (pos_tmp_A>-99999):
-		 print "distance: ",datrovare," ",A_17.MeasureDistance(datrovare)
+   pos_tmp_A  = A_17.MeasureDistance(datrovare)
+   if (pos_tmp_A>-99999):
+	  print "distance: ",datrovare," ",A_17.MeasureDistance(datrovare)
+
+   
+   pos_tmp = D_17.FindName(datrovare)
+   if(pos_tmp>-99999):
+
+     
+     x1=D_17.m_listcalc[pos_tmp].m_Mv
+     x2=D_17.m_listcalc[pos_tmp].m_Mv
+     plt.figure(1)
+     plt.plot([x1, x2], [0, 1], linewidth=2, label=D_17.m_listcalc[pos_tmp].m_Id)
+     plt.legend(loc='upper left')
+     #plt.clear()
+
+   pos_tmp = C_17.FindName(datrovare)
+   if(pos_tmp>-99999):
+     x1=C_17.m_listcalc[pos_tmp].m_Mv
+     x2=C_17.m_listcalc[pos_tmp].m_Mv
+     plt.figure(2)
+     plt.plot([x1, x2], [0, 1], linewidth=2,label=C_17.m_listcalc[pos_tmp].m_Id)
+     plt.legend(loc='upper left')
+     #plt.clear()
+
+   pos_tmp = A_17.FindName(datrovare)
+   if(pos_tmp>-99999):
+     
+     x1=A_17.m_listcalc[pos_tmp].m_Mv
+     x2=A_17.m_listcalc[pos_tmp].m_Mv
+     plt.figure(3)
+     #plt.plot([x1, x2], [0, 1], color='k', linestyle='-', linewidth=2,label=A_17.m_listcalc[pos_tmp].m_Id)
+     plt.plot([x1, x2], [0, 1] , linewidth=2,label=A_17.m_listcalc[pos_tmp].m_Id)
+
+     #pylab.plot(x, y1, '-b', label='sine')
+     #pylab.plot(x, y2, '-r', label='cosine')
+     plt.legend(loc='upper left')
+     FileNameOutSave = A_17.m_listcalc[pos_tmp].m_Id + "pdf"
+     #plt.savefig(FileNameOutSave)
+     #plt.clear()
+   
+   StringCheck = raw_input("Vuoi fermarti? Inserisci Nome nuovo se vuoi continuare ")      
+   if (StringCheck ==""):
+    continua_ciclo=False
+    print "so long gay boys"
+   else:
+    print("Hai scelto " + StringCheck + "!")
+    datrovare = StringCheck
 
 
-
-	 n_bins = 10
-	 x=[]
-
-	 
-	 pos_tmp = D_17.FindName(datrovare)
-	 if(pos_tmp>-99999):
-	   for i in range(len(D_17.m_listcalc)):
-	     voto = float(D_17.m_listcalc[i].m_Mv)
-	     if(voto>0): 
-	      x.append(voto)
-
-	   plt.hist(x, normed=True, bins=n_bins,label='Difensori')   
-	   plt.ylabel('A.U.');
-	   plt.xlabel('Media Fanta Voto');
-	   
-	   x1=D_17.m_listcalc[pos_tmp].m_Mv
-	   x2=D_17.m_listcalc[pos_tmp].m_Mv
-	   plt.plot([x1, x2], [0, 1], color='k', linestyle='-', linewidth=2,label=D_17.m_listcalc[pos_tmp].m_Id)
-
-	   x1=D_17.m_Media
-	   x2=D_17.m_Media
-	   plt.plot([x1, x2], [0, 1], color='r', linestyle='-', linewidth=2,label='media')
-
-
-	   plt.legend(loc='upper left')
-
-
-	 pos_tmp = C_17.FindName(datrovare)
-	 if(pos_tmp>-99999):
-	   for i in range(len(C_17.m_listcalc)):
-	     voto = float(C_17.m_listcalc[i].m_Mv)
-	     if(voto>0): 
-	      x.append(voto)
-	   plt.hist(x, normed=True, bins=n_bins,label='Centrocampisti')  
-	   plt.ylabel('A.U.');
-	   plt.xlabel('Media Fanta Voto');
-
-	   x1=C_17.m_listcalc[pos_tmp].m_Mv
-	   x2=C_17.m_listcalc[pos_tmp].m_Mv
-	   plt.plot([x1, x2], [0, 1], color='k', linestyle='-', linewidth=2,label=C_17.m_listcalc[pos_tmp].m_Id)
-	   
-	   x1=C_17.m_Media
-	   x2=C_17.m_Media
-	   plt.plot([x1, x2], [0, 1], color='r', linestyle='-', linewidth=2,label='media')
-
-	   plt.legend(loc='upper left')
-
-
-	 pos_tmp = A_17.FindName(datrovare)
-	 if(pos_tmp>-99999):
-	   for i in range(len(A_17.m_listcalc)):
-	     voto = float(A_17.m_listcalc[i].m_Mv)
-	     if(voto>0): 
-	      x.append(voto)
-
-	   plt.hist(x, normed=True, bins=n_bins, label='Attaccanti') 
-	   plt.ylabel('A.U.');
-	   plt.xlabel('Media Fanta Voto');
-	   
-	   x1=A_17.m_listcalc[pos_tmp].m_Mv
-	   x2=A_17.m_listcalc[pos_tmp].m_Mv
-	   plt.plot([x1, x2], [0, 1], color='k', linestyle='-', linewidth=2,label=A_17.m_listcalc[pos_tmp].m_Id)
-
-	   x1=A_17.m_Media
-	   x2=A_17.m_Media
-	   plt.plot([x1, x2], [0, 1], color='r', linestyle='-', linewidth=2,label='media')
-
-	   #pylab.plot(x, y1, '-b', label='sine')
-	   #pylab.plot(x, y2, '-r', label='cosine')
-	   plt.legend(loc='upper left')
-	   FileNameOutSave = A_17.m_listcalc[pos_tmp].m_Id + "pdf"
-	   plt.savefig(FileNameOutSave)
-	 StringCheck = raw_input("Vuoi fermarti? Inserisci Nome nuovo se vuoi continuare ")      
-	 if (StringCheck ==""):
-	  continua_ciclo=False
-	  print "so long gay boys"
-	 else:
-	  print("Hai scelto " + StringCheck + "!")
-	  datrovare = StringCheck
- 
-
-
-
- #show()  
- 
+ show()  
